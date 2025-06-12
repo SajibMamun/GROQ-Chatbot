@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Groq Chatbot UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    #chat-box {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 15px;
+      height: 400px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .user {
+      text-align: right;
+      color: blue;
+    }
+    .assistant {
+      text-align: left;
+      color: green;
+    }
+    input[type="text"] {
+      width: 75%;
+      padding: 10px;
+    }
+    button {
+      padding: 10px 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Groq Chatbot</h2>
+  <div id="chat-box"></div>
+  <input type="text" id="user-input" placeholder="Type your message..." />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const inputField = document.getElementById('user-input');
+    const conversationId = Math.random().toString(36).substring(7); // random ID
+
+    function appendMessage(role, message) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${role}`;
+      msgDiv.textContent = `${role === 'user' ? 'You' : 'Bot'}: ${message}`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = inputField.value.trim();
+      if (!message) return;
+
+      appendMessage('user', message);
+      inputField.value = '';
+
+      const response = await fetch('/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          role: "user",
+          conversation_id: conversationId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        appendMessage('assistant', data.response);
+      } else {
+        appendMessage('assistant', 'Error: Unable to get response.');
+      }
+    }
+  </script>
+</body>
+</html>
